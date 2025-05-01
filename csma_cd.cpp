@@ -5,7 +5,7 @@
 
 using namespace std;
 
-bool channelBusy = false; // Flag to indicate if the channel is busy
+bool channelBusy = false;
 
 struct Node {
     int ID;
@@ -31,29 +31,28 @@ int main(int argc, char* argv[]) {
     vector<int> R;
 
     string temp;
-    input >> temp >> N; // Read the number of nodes
-    input >> temp >> delta_t; // Read the delta_t value
-    input >> temp >> T; // Read the T value
-    input >> temp >> L; // Read the L value
+    input >> temp >> N;
+    input >> temp >> delta_t;
+    input >> temp >> T;
+    input >> temp >> L;
 
     R.resize(L); // Resize the R vector to hold the backoff window sizes
     input >> temp; // Read the R values
     for (int i = 0; i < L; ++i) {
-        input >> R[i]; // Read each backoff window size
+        input >> R[i];
     }
-    input.close(); // Close the input file
-
+    input.close();
     vector<Node> nodes(N); // Create a vector of nodes
     for (int i = 0; i < N; ++i) {
-        nodes[i].ID = i; // Assign ID to each node
-        nodes[i].t = 0; // Initialize t to 0
-        nodes[i].R = R[0]; // Assign backoff window size based on ID
-        nodes[i].K = (i + 0) % R[0]; // Calculate K
-        nodes[i].collisionCount = 0; // Initialize collision count to 0
-        nodes[i].transmissionTime = 0; // Initialize transmission time to 0
+        nodes[i].ID = i;
+        nodes[i].t = 0;
+        nodes[i].R = R[0];
+        nodes[i].K = (i + 0) % R[0];
+        nodes[i].collisionCount = 0;
+        nodes[i].transmissionTime = 0;
     }
 
-    int successfulTicks = 0; // Count of successful transmissions
+    int successfulTicks = 0;
 
     for(int tick = 0; tick < T; ++tick) {
         vector<int> readyNodes; // Vector to hold nodes ready to transmit
@@ -61,7 +60,7 @@ int main(int argc, char* argv[]) {
         for(auto& node : nodes) node.t = tick;
 
         for(auto& node : nodes) {
-            if(node.transsmissionTime > 0) { // Check if the node is ready to transmit
+            if(node.transsmissionTime > 0) {
                 node.transmissionTime--;
             }
         }
@@ -69,41 +68,41 @@ int main(int argc, char* argv[]) {
         channelBusy = any_of(nodes.begin(), nodes.end(), [](Node& node) { return node.transmissionTime > 0; });
 
         for (auto& node : nodes) {
-            if(node.K == 0 && node.transmissionTime == 0) { // Check if the node is ready to transmit
-                readyNodes.push_back(node.ID); // Add node ID to ready nodes
+            if(node.K == 0 && node.transmissionTime == 0) {
+                readyNodes.push_back(node.ID);
             }
         }
 
         if (!channelBusy && !readyNodes.empty()) { // If the channel is not busy and there are ready nodes
             if (readyNodes.size() == 1) { // If only one node is ready to transmit
                 Node& node = nodes[readyNodes[0]];
-                node.transmissionTime = delta_t - 1; // Set transmission time
-                successfulTicks += delta_t; // Increment successful transmission count
-                node.R = R[0]; // Reset backoff window size
-                node.collisionCount = 0; // Reset collision count
-                node.K = (ticks + node.ID) % node.R; // Recalculate K
+                node.transmissionTime = delta_t - 1;
+                successfulTicks += delta_t;
+                node.R = R[0];
+                node.collisionCount = 0;
+                node.K = (ticks + node.ID) % node.R;
             }
             else { // If multiple nodes are ready to transmit
                 for (int id : readyNodes) {
                     Node& node = nodes[id];
-                    node.collisionCount++; // Increment collision count
+                    node.collisionCount++;
                     
-                    if(node.collisionCount >= L) { // If collision count exceeds 1
-                        node.collisionCount = 0; // Reset collision count
-                        node.R = R[0]; // Reset backoff window size
+                    if(node.collisionCount >= L) {
+                        node.collisionCount = 0;
+                        node.R = R[0];
                     }
                     else {
-                        int newIndex = min(node.collisionCount, L - 1); // Get the new index for backoff window size
-                        node.R = R[newIndex]; // Update backoff window size
+                        int newIndex = min(node.collisionCount, L - 1);
+                        node.R = R[newIndex];
                     }
 
-                    node.K = (tick + node.ID) % node.R; // Recalculate K
+                    node.K = (tick + node.ID) % node.R;
                 }
             }
         }
         else if (!channelBusy && readyNodes.empty()) { // If the channel is idle and no nodes are ready to transmit
             for (auto& node : nodes) {
-                if (node.K > 0) { // If K is greater than 0, decrement it
+                if (node.K > 0) {
                     node.K--;
                 }
             }
@@ -114,5 +113,5 @@ int main(int argc, char* argv[]) {
     cout.precision(2);
     cout << fixed << (double)successfulTicks / T << endl; // Calculate and print link utilization
 
-    return 0; // Return success
+    return 0;
 }
