@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
         for(auto& node : nodes) node.t = tick;
 
         for(auto& node : nodes) {
-            if(node.transsmissionTime > 0) {
+            if(node.transmissionTime > 0) {
                 node.transmissionTime--;
             }
         }
@@ -80,7 +80,7 @@ int main(int argc, char* argv[]) {
                 successfulTicks += delta_t;
                 node.R = R[0];
                 node.collisionCount = 0;
-                node.K = (ticks + node.ID) % node.R;
+                node.K = (tick + node.ID) % node.R;
             }
             else { // If multiple nodes are ready to transmit
                 for (int id : readyNodes) {
